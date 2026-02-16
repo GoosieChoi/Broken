@@ -209,6 +209,8 @@ export default function FenLeMa() {
             </button>
           </motion.div>
         )}
+        {/* Footer */}
+        <p className="text-center text-[10px] text-muted-foreground/40 pt-4">made by Goosie</p>
       </div>
     </div>
   );
