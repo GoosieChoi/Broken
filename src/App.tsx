@@ -3,7 +3,11 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import FenLeMa from "./pages/FenLeMa";
+import Home from "./pages/Home";
+import CheckIn from "./pages/CheckIn";
+import Badges from "./pages/Badges";
+import Passport from "./pages/Passport";
+import Summary from "./pages/Summary";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -15,7 +19,11 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<FenLeMa />} />
+          <Route path="/" element={<Home />} />
+          <Route path="/checkin" element={<CheckIn />} />
+          <Route path="/badges" element={<Badges />} />
+          <Route path="/passport" element={<Passport />} />
+          <Route path="/summary" element={<Summary />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
