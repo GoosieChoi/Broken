@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import FenLeMa from "./pages/FenLeMa";
+import TruthOrDare from "./pages/TruthOrDare";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -16,6 +17,7 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<FenLeMa />} />
+          <Route path="/game" element={<TruthOrDare />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
