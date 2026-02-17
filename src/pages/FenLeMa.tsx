@@ -1,9 +1,10 @@
 import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import html2canvas from 'html2canvas';
 
 type Gender = 'female' | 'male' | null;
-type Status = 'broken' | 'together' | 'thinking' | null;
+type Status = 'broken' | 'together' | 'thinking' | 'single' | null;
 
 const COPIES: Record<string, { text: string; emoji: string }[]> = {
   'female-broken': [
@@ -42,19 +43,34 @@ const COPIES: Record<string, { text: string; emoji: string }[]> = {
     { text: '要不…先打盘游戏冷静下？', emoji: '🎮' },
     { text: '分了吧，别耽误人家。', emoji: '😐' },
   ],
+  'female-single': [
+    { text: '单身是最好的增值期。', emoji: '💎' },
+    { text: '一个人也可以很精彩。', emoji: '🌟' },
+    { text: '等一个对的人，不着急。', emoji: '🌹' },
+    { text: '自由自在，谁都羡慕你。', emoji: '🦅' },
+  ],
+  'male-single': [
+    { text: '单身贵族，你最酷。', emoji: '😎' },
+    { text: '一个人挺好，钱都是自己的。', emoji: '💰' },
+    { text: '缘分到了自然来。', emoji: '🍀' },
+    { text: '兄弟，先搞事业。', emoji: '🚀' },
+  ],
 };
 
-const statusOptions: { key: Status; label: string; emoji: string }[] = [
+const statusOptions: { key: NonNullable<Status>; label: string; emoji: string }[] = [
   { key: 'broken', label: '分了', emoji: '💔' },
   { key: 'together', label: '没分', emoji: '💑' },
   { key: 'thinking', label: '想分', emoji: '🤔' },
+  { key: 'single', label: '单身', emoji: '🧍' },
 ];
 
 export default function FenLeMa() {
   const [gender, setGender] = useState<Gender>(null);
-  const [result, setResult] = useState<{ text: string; emoji: string; status: Status } | null>(null);
+  const [result, setResult] = useState<{ text: string; emoji: string; status: NonNullable<Status> } | null>(null);
+  const [lastPickIndex, setLastPickIndex] = useState<Record<string, number>>({});
   const [showHint, setShowHint] = useState(false);
   const resultRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
 
   const handleStatus = (status: NonNullable<Status>) => {
     if (!gender) {
@@ -64,8 +80,20 @@ export default function FenLeMa() {
     }
     const key = `${gender}-${status}`;
     const pool = COPIES[key];
-    const pick = pool[Math.floor(Math.random() * pool.length)];
-    setResult({ ...pick, status });
+    const lastIdx = lastPickIndex[key];
+
+    // Pick a random index that differs from the last one
+    let idx: number;
+    if (pool.length <= 1) {
+      idx = 0;
+    } else {
+      do {
+        idx = Math.floor(Math.random() * pool.length);
+      } while (idx === lastIdx);
+    }
+
+    setLastPickIndex(prev => ({ ...prev, [key]: idx }));
+    setResult({ ...pool[idx], status });
   };
 
   const reset = () => {
@@ -90,8 +118,8 @@ export default function FenLeMa() {
   const statusLabel = result ? statusOptions.find(s => s.key === result.status) : null;
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center px-5 py-10">
-      <div className="w-full max-w-sm space-y-8">
+    <div className="flex min-h-[100dvh] flex-col items-center justify-between px-5 py-10">
+      <div className="w-full max-w-sm flex-1 flex flex-col justify-center space-y-8">
         {/* Title */}
         <motion.div className="text-center" initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
           <h1 className="text-5xl font-black">
@@ -126,12 +154,12 @@ export default function FenLeMa() {
           {/* Status */}
           <div className="space-y-2">
             <p className="text-center text-sm font-bold text-muted-foreground">你的状态</p>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-4 gap-2">
               {statusOptions.map(({ key, label, emoji }) => (
                 <button
                   key={key}
-                  onClick={() => handleStatus(key!)}
-                  className={`rounded-2xl py-4 text-base font-extrabold transition-all ${
+                  onClick={() => handleStatus(key)}
+                  className={`rounded-2xl py-3 text-sm font-extrabold transition-all ${
                     result?.status === key
                       ? 'bg-primary text-primary-foreground shadow-md'
                       : 'bg-muted text-muted-foreground'
@@ -193,25 +221,32 @@ export default function FenLeMa() {
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="grid grid-cols-2 gap-3"
+            className="grid grid-cols-3 gap-3"
           >
             <button
               onClick={reset}
-              className="rounded-2xl bg-muted py-4 text-base font-extrabold text-muted-foreground transition-all active:scale-95"
+              className="rounded-2xl bg-muted py-4 text-sm font-extrabold text-muted-foreground transition-all active:scale-95"
             >
               🔁 再来一次
             </button>
             <button
-              onClick={handleShare}
-              className="rounded-2xl bg-primary py-4 text-base font-extrabold text-primary-foreground shadow-md transition-all active:scale-95"
+              onClick={() => navigate('/game')}
+              className="rounded-2xl bg-accent py-4 text-sm font-extrabold text-accent-foreground transition-all active:scale-95"
             >
-              📸 分享截图
+              🎲 小游戏
+            </button>
+            <button
+              onClick={handleShare}
+              className="rounded-2xl bg-primary py-4 text-sm font-extrabold text-primary-foreground shadow-md transition-all active:scale-95"
+            >
+              📸 截图分享
             </button>
           </motion.div>
         )}
-        {/* Footer */}
-        <p className="text-center text-[10px] text-muted-foreground/40 pt-4">made by Goosie</p>
       </div>
+
+      {/* Footer - always at bottom */}
+      <p className="text-center text-[10px] text-muted-foreground/40 pt-6">made by Goosie</p>
     </div>
   );
 }
